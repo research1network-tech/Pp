@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}المنشورات{% endblock %}
+{% block content %}
+<h2>📝 إدارة المنشورات</h2>
+<hr>
+
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">➕ إضافة منشور</div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('add_post_route') }}">
+            <div class="mb-3">
+                <textarea name="content" class="form-control" rows="4" placeholder="نص المنشور..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">إضافة</button>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>المحتوى</th>
+                <th>تاريخ الإضافة</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts %}
+            <tr>
+                <td>{{ post.id }}</td>
+                <td>{{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}</td>
+                <td>{{ post.created_at[:10] }}</td>
+                <td>
+                    <a href="{{ url_for('delete_post_route', post_id=post.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد؟')">🗑️ حذف</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center">لا توجد منشورات</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
