@@ -1,17 +1,46 @@
-# app.py
+# app.py (النسخة المحسّنة مع logging تفصيلي)
+import os
+import sys
+import logging
 import asyncio
 import json
-import logging
-import os
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
-from flask_session import Session
 from datetime import datetime
 import hashlib
 
-from config import SECRET_KEY, DEBUG, ADMIN_USERNAME, ADMIN_PASSWORD, SESSION_FILE_DIR
-from database import *
-from telegram_client import add_account_async, fetch_groups_async, send_post_to_groups_async
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask_session import Session
 
+# تكوين نظام التسجيل (Logging) لتظهر الأخطاء في سجلات Railway
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+logger = logging.getLogger(__name__)
+
+# ===== استيراد الملفات الأخرى مع التقاط أي خطأ =====
+try:
+    from config import SECRET_KEY, DEBUG, ADMIN_USERNAME, ADMIN_PASSWORD, SESSION_FILE_DIR
+    logger.info("✅ تم استيراد config.py بنجاح")
+except Exception as e:
+    logger.error(f"❌ فشل استيراد config.py: {e}")
+    sys.exit(1)
+
+try:
+    from database import *
+    logger.info("✅ تم استيراد database.py بنجاح")
+except Exception as e:
+    logger.error(f"❌ فشل استيراد database.py: {e}")
+    sys.exit(1)
+
+try:
+    from telegram_client import add_account_async, fetch_groups_async, send_post_to_groups_async
+    logger.info("✅ تم استيراد telegram_client.py بنجاح")
+except Exception as e:
+    logger.error(f"❌ فشل استيراد telegram_client.py: {e}")
+    sys.exit(1)
+
+# ===== تهيئة Flask =====
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -20,14 +49,30 @@ app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_FILE_DIR'] = SESSION_FILE_DIR
 
 # إنشاء مجلد الجلسات
-os.makedirs(SESSION_FILE_DIR, exist_ok=True)
+try:
+    os.makedirs(SESSION_FILE_DIR, exist_ok=True)
+    logger.info(f"✅ مجلد الجلسات موجود/تم إنشاؤه: {SESSION_FILE_DIR}")
+except Exception as e:
+    logger.error(f"❌ فشل إنشاء مجلد الجلسات: {e}")
 
-Session(app)
+try:
+    Session(app)
+    logger.info("✅ تم تهيئة Flask-Session بنجاح")
+except Exception as e:
+    logger.error(f"❌ فشل تهيئة Flask-Session: {e}")
+    sys.exit(1)
 
-# تهيئة قاعدة البيانات
-init_db()
+# ===== تهيئة قاعدة البيانات =====
+try:
+    init_db()
+    logger.info("✅ تم تهيئة قاعدة البيانات بنجاح")
+except Exception as e:
+    logger.error(f"❌ فشل تهيئة قاعدة البيانات: {e}")
+    sys.exit(1)
 
-# ========== دوال مساعدة ==========
+logger.info("🚀 تم تهيئة التطبيق بالكامل، جاهز لتلقي الطلبات.")
+
+# ===== دوال مساعدة =====
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -45,10 +90,15 @@ def get_current_user():
         return get_user(session['user_id'])
     return None
 
-# ========== الصفحات ==========
+# ===== مسار اختبار بسيط للتحقق من أن التطبيق يعمل =====
+@app.route('/health')
+def health_check():
+    return "OK", 200
 
+# ===== الصفحات =====
 @app.route('/')
 def index():
+    logger.info("📄 طلب الصفحة الرئيسية")
     if 'user_id' in session:
         return redirect(url_for('dashboard'))
     return render_template('index.html')
@@ -99,7 +149,7 @@ def logout():
     flash('تم تسجيل الخروج', 'info')
     return redirect(url_for('index'))
 
-# ========== لوحة التحكم ==========
+# ===== لوحة التحكم =====
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -118,7 +168,7 @@ def dashboard():
                          schedules=schedules,
                          settings=settings)
 
-# ========== إدارة الحسابات ==========
+# ===== إدارة الحسابات =====
 @app.route('/accounts')
 @login_required
 def accounts():
@@ -179,7 +229,7 @@ def delete_account_route(account_id):
     flash('تم حذف الحساب', 'success')
     return redirect(url_for('accounts'))
 
-# ========== إدارة المنشورات ==========
+# ===== إدارة المنشورات =====
 @app.route('/posts')
 @login_required
 def posts():
@@ -208,7 +258,7 @@ def delete_post_route(post_id):
     flash('تم حذف المنشور', 'success')
     return redirect(url_for('posts'))
 
-# ========== إدارة المجموعات ==========
+# ===== إدارة المجموعات =====
 @app.route('/groups')
 @login_required
 def groups():
@@ -219,7 +269,7 @@ def groups():
         groups_list = get_cached_groups(user['id'], acc['id'])
     return render_template('groups.html', groups=groups_list, account=acc)
 
-# ========== الجدولة ==========
+# ===== الجدولة =====
 @app.route('/schedule', methods=['GET', 'POST'])
 @login_required
 def schedule():
@@ -246,7 +296,7 @@ def cancel_schedule_route(schedule_id):
     flash('تم إلغاء الجدولة', 'success')
     return redirect(url_for('schedule'))
 
-# ========== الحملات ==========
+# ===== الحملات =====
 @app.route('/campaigns')
 @login_required
 def campaigns():
@@ -281,7 +331,7 @@ def delete_campaign_route(campaign_id):
     flash('تم حذف الحملة', 'success')
     return redirect(url_for('campaigns'))
 
-# ========== تشغيل النشر ==========
+# ===== تشغيل النشر =====
 @app.route('/run_campaign/<int:campaign_id>')
 @login_required
 def run_campaign(campaign_id):
@@ -299,7 +349,6 @@ def run_campaign(campaign_id):
     post_ids = json.loads(campaign['post_ids'])
     account_ids = json.loads(campaign['account_ids'])
     
-    # جلب المنشورات
     posts = []
     for pid in post_ids:
         conn = get_db()
@@ -314,7 +363,6 @@ def run_campaign(campaign_id):
         flash('لا توجد منشورات في الحملة', 'danger')
         return redirect(url_for('campaigns'))
     
-    # جلب الحسابات
     accounts = []
     for aid in account_ids:
         conn = get_db()
@@ -329,7 +377,6 @@ def run_campaign(campaign_id):
         flash('لا توجد حسابات في الحملة', 'danger')
         return redirect(url_for('campaigns'))
     
-    # تنفيذ النشر
     results = []
     for acc in accounts:
         for post in posts:
@@ -342,7 +389,7 @@ def run_campaign(campaign_id):
     flash(f'تم نشر المنشورات بنجاح ({len(results)} عملية)', 'success')
     return redirect(url_for('campaigns'))
 
-# ========== الإعدادات ==========
+# ===== الإعدادات =====
 @app.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings():
@@ -360,7 +407,8 @@ def settings():
     settings_value = get_publish_settings(user['id'])
     return render_template('settings.html', settings=settings_value)
 
-# ========== تشغيل التطبيق ==========
+# ===== تشغيل التطبيق =====
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
+    logger.info(f"🚀 تشغيل التطبيق على المنفذ {port}")
     app.run(host='0.0.0.0', port=port, debug=False)
