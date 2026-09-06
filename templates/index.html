@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}الرئيسية - منصة ميم تسويق{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-4">🏢 منصة ميم تسويق</h1>
+    <p class="lead">منصة متكاملة لإدارة حسابات Telegram والنشر التلقائي</p>
+    <div class="mt-4">
+        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">تسجيل الدخول</a>
+        <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">إنشاء حساب</a>
+    </div>
+</div>
+{% endblock %}
