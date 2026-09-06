@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}الإعدادات{% endblock %}
+{% block content %}
+<h2>⚙️ الإعدادات</h2>
+<hr>
+
+<div class="card">
+    <div class="card-header bg-secondary text-white">إعدادات النشر</div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label">⏱️ وقت الانتظار بين المنشورات (بالثواني)</label>
+                <input type="number" name="delay" class="form-control" value="{{ settings }}" min="1" required>
+            </div>
+            <button type="submit" class="btn btn-secondary">💾 حفظ الإعدادات</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
