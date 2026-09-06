@@ -1,1 +1,1 @@
-python-3.11.0
+mise python@3.11.0 installed successfully
