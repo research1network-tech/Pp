@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}إنشاء حساب{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">إنشاء حساب جديد</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">اسم المستخدم</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">كلمة المرور</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">تأكيد كلمة المرور</label>
+                        <input type="password" name="confirm" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">إنشاء الحساب</button>
+                </form>
+                <hr>
+                <p class="text-center">لديك حساب؟ <a href="{{ url_for('login') }}">تسجيل الدخول</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
