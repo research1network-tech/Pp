@@ -2,9 +2,9 @@
 import os
 
 # إعدادات التطبيق
-SECRET_KEY = "mim_marketing_secret_key_2026"
-DEBUG = True
-PORT = 5000
+SECRET_KEY = os.environ.get("SECRET_KEY", "mim_marketing_secret_key_2026")
+DEBUG = False  # يجب أن يكون False في الإنتاج
+PORT = int(os.environ.get("PORT", 5000))
 
 # إعدادات Telegram
 API_ID = 39289901
