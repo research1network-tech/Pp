@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}الحسابات{% endblock %}
+{% block content %}
+<h2>📱 إدارة الحسابات</h2>
+<hr>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">➕ إضافة حساب جديد</div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('add_account') }}">
+            <div class="row">
+                <div class="col-md-4">
+                    <input type="text" name="phone" class="form-control" placeholder="رقم الهاتف (مثال: +966500000000)" required>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" name="code" class="form-control" placeholder="كود التحقق">
+                </div>
+                <div class="col-md-3">
+                    <input type="password" name="password" class="form-control" placeholder="كلمة المرور (إن وجدت)">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">إضافة</button>
+                </div>
+            </div>
+        </form>
+        <small class="text-muted">* بعد إرسال الرقم، سيتم إرسال كود التحقق إلى هاتفك، أدخله في الحقل المناسب.</small>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>رقم الهاتف</th>
+                <th>الحالة</th>
+                <th>تاريخ الإضافة</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for acc in accounts %}
+            <tr>
+                <td>{{ acc.id }}</td>
+                <td>{{ acc.phone[:4] }}****{{ acc.phone[-3:] }}</td>
+                <td>
+                    {% if acc.is_active %}
+                    <span class="badge bg-success">🟢 نشط</span>
+                    {% else %}
+                    <span class="badge bg-secondary">⚪ غير نشط</span>
+                    {% endif %}
+                </td>
+                <td>{{ acc.created_at[:10] }}</td>
+                <td>
+                    <a href="{{ url_for('fetch_groups', account_id=acc.id) }}" class="btn btn-sm btn-info">👥 جلب المجموعات</a>
+                    {% if not acc.is_active %}
+                    <a href="{{ url_for('set_active', account_id=acc.id) }}" class="btn btn-sm btn-success">✅ تفعيل</a>
+                    {% endif %}
+                    <a href="{{ url_for('delete_account_route', account_id=acc.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد؟')">🗑️ حذف</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center">لا توجد حسابات</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
