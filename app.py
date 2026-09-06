@@ -8,7 +8,7 @@ from flask_session import Session
 from datetime import datetime
 import hashlib
 
-from config import SECRET_KEY, DEBUG, PORT, ADMIN_USERNAME, ADMIN_PASSWORD
+from config import SECRET_KEY, DEBUG, ADMIN_USERNAME, ADMIN_PASSWORD, SESSION_FILE_DIR
 from database import *
 from telegram_client import add_account_async, fetch_groups_async, send_post_to_groups_async
 
@@ -17,7 +17,11 @@ app.secret_key = SECRET_KEY
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_FILE_DIR'] = '/tmp/flask_session'  # مهم لـ Railway
+app.config['SESSION_FILE_DIR'] = SESSION_FILE_DIR
+
+# إنشاء مجلد الجلسات
+os.makedirs(SESSION_FILE_DIR, exist_ok=True)
+
 Session(app)
 
 # تهيئة قاعدة البيانات
@@ -358,6 +362,5 @@ def settings():
 
 # ========== تشغيل التطبيق ==========
 if __name__ == '__main__':
-    # استخدام PORT من متغيرات البيئة (مهم لـ Railway)
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
