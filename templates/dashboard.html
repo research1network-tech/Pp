@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}لوحة التحكم{% endblock %}
+{% block content %}
+<h2>📊 لوحة التحكم</h2>
+<hr>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+                <h5 class="card-title">📱 الحسابات</h5>
+                <h2>{{ accounts|length }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">📝 المنشورات</h5>
+                <h2>{{ posts|length }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+                <h5 class="card-title">📣 الحملات</h5>
+                <h2>{{ campaigns|length }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-body">
+                <h5 class="card-title">⏰ الجدولات</h5>
+                <h2>{{ schedules|length }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">⚙️ الإعدادات</div>
+            <div class="card-body">
+                <p>⏱️ وقت الانتظار بين المنشورات: <strong>{{ settings }} ثانية</strong></p>
+                <a href="{{ url_for('settings') }}" class="btn btn-sm btn-secondary">تعديل</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
