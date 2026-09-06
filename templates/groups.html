@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}المجموعات{% endblock %}
+{% block content %}
+<h2>👥 المجموعات</h2>
+<hr>
+
+{% if account %}
+<div class="alert alert-info">
+    <strong>📱 الحساب النشط:</strong> {{ account.phone[:4] }}****{{ account.phone[-3:] }}
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>اسم المجموعة</th>
+                <th>Username</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for g in groups %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ g.group_title }}</td>
+                <td>@{{ g.group_username if g.group_username else 'لا يوجد' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-center">لا توجد مجموعات. قم بجلب المجموعات من صفحة الحسابات.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-warning">الرجاء تفعيل حساب أولاً من صفحة الحسابات.</div>
+{% endif %}
+{% endblock %}
