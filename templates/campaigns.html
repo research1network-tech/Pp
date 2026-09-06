@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}الحملات{% endblock %}
+{% block content %}
+<h2>📣 الحملات</h2>
+<hr>
+
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">➕ حملة جديدة</div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('add_campaign') }}">
+            <div class="mb-3">
+                <input type="text" name="name" class="form-control" placeholder="اسم الحملة" required>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <label>اختر المنشورات:</label>
+                    <select name="post_ids" class="form-select" multiple required>
+                        {% for post in posts %}
+                        <option value="{{ post.id }}">{{ post.content[:50] }}...</option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted">اضغط Ctrl + اختيار لتحديد عدة منشورات</small>
+                </div>
+                <div class="col-md-6">
+                    <label>اختر الحسابات:</label>
+                    <select name="account_ids" class="form-select" multiple required>
+                        {% for acc in accounts %}
+                        <option value="{{ acc.id }}">{{ acc.phone[:4] }}****{{ acc.phone[-3:] }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted">اضغط Ctrl + اختيار لتحديد عدة حسابات</small>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-info mt-3">➕ إنشاء حملة</button>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>الاسم</th>
+                <th>الحالة</th>
+                <th>تاريخ الإنشاء</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for camp in campaigns %}
+            <tr>
+                <td>{{ camp.id }}</td>
+                <td>{{ camp.name }}</td>
+                <td><span class="badge bg-secondary">{{ camp.status }}</span></td>
+                <td>{{ camp.created_at[:10] }}</td>
+                <td>
+                    <a href="{{ url_for('run_campaign', campaign_id=camp.id) }}" class="btn btn-sm btn-success">🚀 تشغيل</a>
+                    <a href="{{ url_for('delete_campaign_route', campaign_id=camp.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد؟')">🗑️ حذف</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center">لا توجد حملات</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
