@@ -2,6 +2,7 @@
 import asyncio
 import json
 import logging
+import os
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_session import Session
 from datetime import datetime
@@ -14,6 +15,9 @@ from telegram_client import add_account_async, fetch_groups_async, send_post_to_
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_FILE_DIR'] = '/tmp/flask_session'  # مهم لـ Railway
 Session(app)
 
 # تهيئة قاعدة البيانات
@@ -126,11 +130,9 @@ def add_account():
     code = request.form.get('code')
     password = request.form.get('password')
     
-    # هنا نستخدم session_str فارغ لتسجيل جديد
     success, result = asyncio.run(add_account_async('', phone, code, password))
     
     if success:
-        # حفظ الحساب مع session
         session_str = result
         add_telegram_account(user['id'], session_str, phone)
         flash('تم إضافة الحساب بنجاح', 'success')
@@ -246,7 +248,9 @@ def cancel_schedule_route(schedule_id):
 def campaigns():
     user = get_current_user()
     camp_list = get_campaigns(user['id'])
-    return render_template('campaigns.html', campaigns=camp_list)
+    posts_list = get_posts(user['id'])
+    accounts_list = get_telegram_accounts(user['id'])
+    return render_template('campaigns.html', campaigns=camp_list, posts=posts_list, accounts=accounts_list)
 
 @app.route('/add_campaign', methods=['POST'])
 @login_required
@@ -294,8 +298,11 @@ def run_campaign(campaign_id):
     # جلب المنشورات
     posts = []
     for pid in post_ids:
+        conn = get_db()
+        cursor = conn.cursor()
         cursor.execute("SELECT * FROM posts WHERE id = ? AND user_id = ?", (pid, user['id']))
         post = cursor.fetchone()
+        conn.close()
         if post:
             posts.append(post)
     
@@ -306,8 +313,11 @@ def run_campaign(campaign_id):
     # جلب الحسابات
     accounts = []
     for aid in account_ids:
+        conn = get_db()
+        cursor = conn.cursor()
         cursor.execute("SELECT * FROM telegram_accounts WHERE id = ? AND user_id = ?", (aid, user['id']))
         acc = cursor.fetchone()
+        conn.close()
         if acc:
             accounts.append(acc)
     
@@ -343,9 +353,11 @@ def settings():
             flash('قيمة غير صحيحة', 'danger')
         return redirect(url_for('settings'))
     
-    settings = get_publish_settings(user['id'])
-    return render_template('settings.html', settings=settings)
+    settings_value = get_publish_settings(user['id'])
+    return render_template('settings.html', settings=settings_value)
 
 # ========== تشغيل التطبيق ==========
 if __name__ == '__main__':
-    app.run(debug=DEBUG, port=PORT)
+    # استخدام PORT من متغيرات البيئة (مهم لـ Railway)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
