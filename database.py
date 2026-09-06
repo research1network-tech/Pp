@@ -1,8 +1,12 @@
 # database.py
 import sqlite3
 import json
+import os
 from datetime import datetime
 from config import DATABASE
+
+# التأكد من وجود المجلد
+os.makedirs(os.path.dirname(DATABASE), exist_ok=True)
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
