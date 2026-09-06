@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}الجدولة{% endblock %}
+{% block content %}
+<h2>⏰ الجدولة</h2>
+<hr>
+
+<div class="card mb-4">
+    <div class="card-header bg-warning">➕ جدولة جديدة</div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="row">
+                <div class="col-md-4">
+                    <select name="account_id" class="form-select" required>
+                        <option value="">اختر الحساب...</option>
+                        {% for acc in accounts %}
+                        <option value="{{ acc.id }}">{{ acc.phone[:4] }}****{{ acc.phone[-3:] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="datetime-local" name="scheduled_time" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-warning w-100">➕ جدولة</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>الحساب</th>
+                <th>الوقت المحدد</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sch in schedules %}
+            <tr>
+                <td>{{ sch.id }}</td>
+                <td>{{ sch.account_id }}</td>
+                <td>{{ sch.scheduled_time }}</td>
+                <td><span class="badge bg-warning">⏳ معلق</span></td>
+                <td>
+                    <a href="{{ url_for('cancel_schedule_route', schedule_id=sch.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد؟')">❌ إلغاء</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center">لا توجد جدولات معلقة</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
